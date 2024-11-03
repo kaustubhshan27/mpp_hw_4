@@ -2,17 +2,22 @@ package edu.vt.ece.hw4;
 
 import edu.vt.ece.hw4.barriers.Barrier;
 import edu.vt.ece.hw4.barriers.TTASBarrier;
+import edu.vt.ece.hw4.barriers.ArrayBarrier;
 import edu.vt.ece.hw4.bench.*;
 import edu.vt.ece.hw4.locks.ALock;
 import edu.vt.ece.hw4.locks.BackoffLock;
 import edu.vt.ece.hw4.locks.Lock;
 import edu.vt.ece.hw4.locks.MCSLock;
+import edu.vt.ece.hw4.locks.TTASLock;
+import edu.vt.ece.hw4.locks.SpinSleepLock;
 
 public class Benchmark {
 
     private static final String ALOCK = "ALock";
     private static final String BACKOFFLOCK = "BackoffLock";
     private static final String MCSLOCK = "MCSLock";
+    private static final String TTASLOCK = "TTASLock";
+    private static final String SPINSLEEPLOCK = "SpinSleepLock";
 
     public static void main(String[] args) throws Exception {
         String mode = args.length <= 0 ? "normal" : args[0];
@@ -38,6 +43,12 @@ public class Benchmark {
                 case MCSLOCK:
                     lock = new MCSLock();
                     break;
+                case TTASLOCK:
+                    lock = new TTASLock();
+                    break;
+                case SPINSLEEPLOCK:
+                    lock = new SpinSleepLock();
+                    break;
             }
 
             switch (mode.trim().toLowerCase()) {
@@ -51,9 +62,14 @@ public class Benchmark {
                 case "long":
                     runLongCS(lock, threadCount, iters);
                     break;
-                case "barrier":
-                    Barrier b = new TTASBarrier();
-                    throw new UnsupportedOperationException("Complete this.");
+                case "barrier1":
+                    Barrier b = new TTASBarrier(threadCount);
+                    runBarrier(b, threadCount, iters);
+                    break;
+                case "barrier2":
+                    Barrier b2 = new ArrayBarrier(threadCount);
+                    runBarrier(b2, threadCount, iters);
+                    break;
                 default:
                     throw new UnsupportedOperationException("Implement this");
             }
@@ -123,5 +139,25 @@ public class Benchmark {
         }
 
         System.out.println("Average time per thread is " + totalTime / threadCount + "ms");
+    }
+
+    private static void runBarrier(Barrier barrier, int threadCount, int iters) throws Exception {
+        final BarrierTestThread[] threads = new BarrierTestThread[threadCount];
+
+        for (int t = 0; t < threadCount; t++) {
+            threads[t] = new BarrierTestThread(barrier, iters);
+        }
+
+        for (int t = 0; t < threadCount; t++) {
+            threads[t].start();
+        }
+
+        long totalTime = 0;
+        for (int t = 0; t < threadCount; t++) {
+            threads[t].join();
+            totalTime += threads[t].getElapsedTime();
+        }
+
+        System.out.println("Average time per thread for barrier is " + totalTime / threadCount + "ms");
     }
 }

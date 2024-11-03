@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="edu.vt.ece.spin.TTASLockTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-11-01T23:53:09" hostname="redbud.rlogin" time="0.011">
+  <properties/>
+  <testcase name="testParallel" classname="edu.vt.ece.spin.TTASLockTest" time="0.011"/>
+  <system-out><![CDATA[parallel
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
